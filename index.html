@@ -1,0 +1,291 @@
+<html>
+<head>
+  <title>My first Three.js app</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style type="text/css">
+      body, html {
+          margin: 0;
+          height: 100%;
+      }
+      #container{
+          height: 100%;
+          width: 100%;
+          border: 1px solid #000;
+          margin: 0;
+          position: relative;
+          overflow: hidden;
+      }
+      .overlay {
+          z-index: 10000;
+          position: absolute;
+          width: 120px;
+          top: 0px;
+          left: 0px;
+          text-align: center;
+          margin-left: -60px;
+          cursor: pointer;
+      }
+      .overlay-label {
+          position: absolute;
+          width: 120px;
+          text-align: center;
+          top: -20px;
+          color: rgb(255, 255, 255);
+          display: block;
+          font-size: 14px;
+          text-shadow: black 2px 2px 2px;
+          cursor: pointer;
+      }
+      .overlay-arrow {
+          width: 40px;
+          height: 28px;
+          cursor: pointer;
+      }
+      .glass-btn {
+          position: absolute;
+          width: 30px;
+          right: 10px;
+          top: 10px;
+      }
+      .glass-exitbtn {
+          position: absolute;
+          width: 60px;
+          left: 10px;
+          top: 10px;
+          padding: 4px;
+          color: #fff;
+          text-align: center;
+          font-size: 14px;
+          border-radius: 5px;
+          background: rgba(0, 0, 0, .7);
+      }
+      .glass-exitbtn1 {
+          top: 50%;
+          left: 82%;
+          margin-top: -15px;
+          margin-left: 0;
+          transform: rotate(90deg);
+      }
+      .glass-exitbtn2 {
+          top: 5;
+          left: 50%;
+          margin-top: 0;
+          margin-left: -30px;
+          transform: rotate(0deg);
+      }
+      .test-btn {
+          display: none;
+          position: absolute;
+          width: 100px;
+          left: 100px;
+          top: 0;
+          color: #fff;
+          background: rgba(0,0,0,.7)
+      }
+      .center-point {
+          display: none;
+          position: absolute;
+          left: 0;
+          top: 0;
+          background: #fff;
+          box-shadow: 2px 2px 2px #000;
+      }
+      .controls {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+      }
+      .row {
+          display: flex;
+          margin: 10px 0;
+      }
+      .label {
+          width: 50px;
+      }
+      #add-overlay, #save-rotation {
+          background: rgb(25, 143, 123);
+          border-radius: 5px;
+          cursor: pointer;
+          padding: 4px;
+          color: #fff;
+      }
+      #scene-list {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          background: rgba(0, 0, 0, .7);
+          display: flex;
+          justify-content: center;
+      }
+      .scene-item {
+          width: 120px;
+          height: 80px;
+          position: relative;
+          margin: 0 8px;
+          overflow: hidden;
+          cursor: pointer;
+      }
+      .scene-item img {
+          width: 100%;
+          height: auto;
+      }
+      .scene-item .title {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          background: rgba(0, 0, 0, .7);
+          text-align: center;
+          color: #fff;
+      }
+      .scene-item .btn {
+          position: absolute;
+          top: 0;
+          width: 100%;
+          text-align: center;
+          color: #fff;
+      }
+  </style>
+</head>
+<body>
+<div id="container"></div>
+</body>
+<!--只包含全景图展示功能-->
+<script src="https://unpkg.com/vr-panorama@latest/dist/VrTraveller.js"></script>
+<!--只包含全景图录制数据功能-->
+<!--<script src="https://unpkg.com/vr-panorama@latest/dist/VrAligner.js"></script>-->
+<!--&lt;!&ndash;包含VrTraveller和VrAligner&ndash;&gt;-->
+<!--<script src="https://unpkg.com/vr-panorama@latest/dist/VrPano.js"></script>-->
+<script>
+
+  const sourceRoot = './assets';
+  // 用来展示vr的容器
+  const box = document.querySelector('#container');
+  // 渲染vr所需要的数据
+  const data = getNaviData();
+  // VrTraveller实例
+  const traveller = new VrTraveller(data, box);
+  // vr眼镜，可选
+  // const glassesButton = new VrTraveller.GlassesButton();
+  // traveller.setGlassesButton(glassesButton);
+
+  // 获取球面贴图资源，缩略图+碎片图，4行8列
+  function getSphereSliceUrl(key) {
+    const list = [];
+    for (let i = 0; i < 8; i++) {
+      const a = [];
+      for (let j = 0; j < 4; j++) {
+        a.push(`${sourceRoot}/sphereSource/${key}/${i}-${j}.jpg`);
+      }
+      list.push(a);
+    }
+    console.log(list)
+    return list;
+  }
+
+  // 获取立方体贴图资源，缩略图+6个面的碎片图
+  function getCubeSliceUrl(key) {
+    // let arr = [];
+    // for(let i = 1; i < 7; i++) {
+    //   arr.push(`${sourceRoot}/cubeSource/${key}/pano${i}.jpg`);
+    // }
+    // return arr;
+  }
+
+
+  // x: 经度，0~2πy: 维度 - 2 / π~2 / π
+  // yaw pitch roll
+  function getNaviData() {
+    // 返回一个数组，每一项保存一个场景
+    return [{
+      // 场景的角度及资源
+      "scene": {
+        // 场景的唯一标识
+        "photo_key": "1",
+        // 场景的校正角度
+        "correction": [0, 0, 0],
+        // 场景的旋转角度 水平，数值，第三项固定为0
+        "rotation": [180, 0, 0],
+        "title": "客厅",
+        // 球面贴图的资源
+        "sphereSource": {
+          thumb: `${sourceRoot}/sphereSource/1/room1.jpg`,
+          slices: getSphereSliceUrl(1)
+        },
+        // 立方体贴图的资源
+        "cubeSource": {
+          // thumb: `${sourceRoot}/cubeSource/1/thumb.jpg`,
+          // slices: getCubeSliceUrl(1)
+        },
+        // 是否默认展示该场景
+        "is_main": 1
+      },
+      // 场景的导航
+      "overlays": [{
+        "title": "研发部",
+        // 导航的位置，x:经度，y:纬度
+        "x": 1.720072719141,
+        "y": -0.36291666726088,
+        // 导航的跳转场景标识
+        "next_photo_key": "2"
+      },
+        {
+          "title": "Boss办公室",
+          "x": 1.390072719141,
+          "y": -0.31291666726088,
+          "next_photo_key": "3"
+        }]
+    },
+      {
+        "scene": {
+          "photo_key": "2",
+          "correction": [0, 0, 0],
+          "rotation": [180, 0, 0],
+          "title": "研发部",
+          "sphereSource": {
+            thumb: `${sourceRoot}/sphereSource/2/room2.jpg`,
+            slices: getSphereSliceUrl(2)
+          },
+          "cubeSource": {
+            // thumb: `${sourceRoot}/cubeSource/2/thumb.jpg`,
+            // slices: getCubeSliceUrl(2)
+          },
+          "is_main": 0
+        },
+        "overlays": [{
+          "title": "客厅",
+          "x": 0.4420072719141,
+          "y": -0.32291666726088,
+          "next_photo_key": "1"
+        }]
+      },
+      {
+        "scene": {
+          "photo_key": "3",
+          "correction": [0, 0, 0],
+          "rotation": [180, 0, 0],
+          "title": "Boss办公室",
+          "sphereSource": {
+            thumb: `${sourceRoot}/sphereSource/3/room3.jpg`,
+            slices: getSphereSliceUrl(3)
+          },
+          "cubeSource": {
+            // thumb: `${sourceRoot}/cubeSource/2/thumb.jpg`,
+            // slices: getCubeSliceUrl(2)
+          },
+          "is_main": 0
+        },
+        "overlays": [{
+          "title": "客厅",
+          "x": 2.7420072719141,
+          "y": -0.40291666726088,
+          "next_photo_key": "1"
+        }]
+      }
+    ];
+  }
+</script>
+</html>
