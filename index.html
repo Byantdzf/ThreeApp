@@ -161,7 +161,7 @@
 <!--<script src="https://unpkg.com/vr-panorama@latest/dist/VrPano.js"></script>-->
 <script>
 
-  const sourceRoot = 'https://image.ufutx.com/vr_image';
+  const sourceRoot = './assets';
   // 用来展示vr的容器
   const box = document.querySelector('#container');
   // 渲染vr所需要的数据
@@ -178,7 +178,7 @@
     for (let i = 0; i < 8; i++) {
       const a = [];
       for (let j = 0; j < 4; j++) {
-        a.push(`${sourceRoot}/${key}/${i}-${j}.jpg`);
+        a.push(`${sourceRoot}/sphereSource/${key}/${i}-${j}.jpg`);
       }
       list.push(a);
     }
@@ -212,7 +212,7 @@
         "title": "客厅",
         // 球面贴图的资源
         "sphereSource": {
-          thumb: `${sourceRoot}/1/room1.jpg`,
+          thumb: `${sourceRoot}/sphereSource/1/room1.jpg`,
           slices: getSphereSliceUrl(1)
         },
         // 立方体贴图的资源
@@ -246,7 +246,7 @@
           "rotation": [180, 0, 0],
           "title": "研发部",
           "sphereSource": {
-            thumb: `${sourceRoot}/2/room2.jpg`,
+            thumb: `${sourceRoot}/sphereSource/2/room2.jpg`,
             slices: getSphereSliceUrl(2)
           },
           "cubeSource": {
@@ -269,7 +269,7 @@
           "rotation": [180, 0, 0],
           "title": "办公室",
           "sphereSource": {
-            thumb: `${sourceRoot}/3/room3.jpg`,
+            thumb: `${sourceRoot}/sphereSource/3/room3.jpg`,
             slices: getSphereSliceUrl(3)
           },
           "cubeSource": {
